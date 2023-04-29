@@ -35,6 +35,8 @@ class KaryawanController extends Controller
             'tanggal_bergabung' => 'required|date',
             'jabatan_id' => 'required|array',
             'jabatan_id.*' => 'required|exists:jabatans,id',
+            'jabatann_id' => 'array',
+            'jabatanm_id.*' => 'exists:jabatans,id',
         ]);
 
         if ($validator->fails()) {
@@ -51,6 +53,7 @@ class KaryawanController extends Controller
 
         // Attach jabatan ke karyawan
         $karyawan->jabatan()->attach($request->jabatan_id);
+        $karyawan->jabatan()->attach($request->jabatann_id);
         return redirect()->route('karyawans.index')->with('message', 'Karyawan berhasil ditambahkan.');
     }
 
@@ -64,6 +67,7 @@ class KaryawanController extends Controller
 
     public function update(Request $request, Karyawan $karyawan)
     {
+
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:karyawans',
@@ -71,6 +75,8 @@ class KaryawanController extends Controller
             'tanggal_bergabung' => 'required|date',
             'jabatan_id' => 'required|array',
             'jabatan_id.*' => 'required|exists:jabatans,id',
+            'jabatann_id' => 'required|array',
+            'jabatanm_id.*' => 'exists:jabatans,id',
 
         ]);
 
@@ -84,7 +90,8 @@ class KaryawanController extends Controller
         $karyawan->tanggal_bergabung = $request->input('tanggal_bergabung');
         $karyawan->save();
 
-        $karyawan->jabatan()->sync($request->input('jabatan_id'));
+        $karyawan->jabatan()->attach($request->input('jabatan_id'));
+        $karyawan->jabatan()->attach($request->input('jabatann_id'));
 
         return redirect()->route('karyawans.index')->with('message', 'Data karyawan berhasil diperbarui.');
     }
