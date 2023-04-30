@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Backend;
 
+use Yajra\DataTables\Facades\DataTables;
 use App\Http\Controllers\Controller;
 use App\Models\Karyawan;
 use App\Models\Jabatan;
@@ -9,10 +10,29 @@ use App\Models\Unit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
+
 class KaryawanController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        if ($request->ajax()) {
+            $karyawans = Karyawan::query()->with(['unit', 'jabatan']);
+            return DataTables::of($karyawans)
+                ->addColumn('jabatan', function ($karyawan) {
+                    return $karyawan->jabatan->pluck('name_jabatan')->implode(', ');
+                })
+                ->addColumn('aksi', function ($row) {
+                    $btnEdit = '<a href="' . route("karyawans.edit", $row->id) . '" class="btn btn-sm btn-primary me-2">Edit</a>';
+                    $btnDelete = '<form action="' . route("karyawans.destroy", $row->id) . '" method="POST" class="d-inline">';
+                    $btnDelete .= csrf_field();
+                    $btnDelete .= method_field('DELETE');
+                    $btnDelete .= '<button type="submit" class="btn btn-sm btn-danger" onclick="return confirm(\'Are you sure?\')">Delete</button></form>';
+                    $btnContainer = '<div class="d-flex justify-content-end">' . $btnEdit . $btnDelete . '</div>';
+                    return $btnContainer;
+                })
+                ->rawColumns(['aksi'])
+                ->make();
+        }
         $karyawans = Karyawan::with(['unit', 'jabatan'])->get();
 
         return view('karyawans.index', compact('karyawans'));

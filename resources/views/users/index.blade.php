@@ -30,7 +30,7 @@
         </div>
       </div>
       <div class="card-body">
-        <table class="table">
+        <table class="table" id="tbl_list">
           <thead>
             <tr>
               <th scope="col">#Id</th>
@@ -41,20 +41,58 @@
             </tr>
           </thead>
           <tbody>
-            @foreach ($users as $user)
-            <tr>
-              <th scope="row">{{ $user->id }}</th>
-              <td>{{ $user->name }}</td>
-              <td>{{ $user->username }}</td>
-              <td>{{ $user->email }}</td>
-              <td>
-                <a href="{{ route('users.edit', $user->id) }}" class="btn btn-success">Edit</a>
-              </td>
-            </tr>
-                
-            @endforeach
+           
           </tbody>
         </table> 
       </div>
     </div>
 @endsection
+@push('scripts')
+<script type="text/javascript">
+$(document).ready(function () {
+   $('#tbl_list').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: '{{ url()->current() }}',
+        columns: [
+            { data: 'id', name: 'id' },
+            { data: 'name', name: 'name' },
+            { data: 'username', name: 'username' },
+            { data: 'email', name: 'email' },
+            { data: 'aksi', name: 'aksi', orderable: false, searchable: false }
+            ],
+            fnDrawCallback: function() {
+                $('.btn-edit').click(function(e){
+                    e.preventDefault();
+                    window.location.href = $(this).attr('href');
+                });
+
+                $('.btn-delete').click(function(e){
+                    e.preventDefault();
+                    var url = $(this).attr('href');
+                    if(confirm('Are you sure you want to delete this data?')){
+                        $.ajax({
+                            url: url,
+                            type: 'DELETE',
+                            data: {
+                                _token: '{{ csrf_token() }}'
+                            },
+                            success: function(res){
+                                if(res.success){
+                                    alert('Data berhasil dihapus');
+                                    $('#tbl_list').DataTable().ajax.reload();
+                                } else {
+                                    alert('Data gagal dihapus');
+                                }
+                            },
+                            error: function(xhr){
+                                alert('Terjadi kesalahan. Silakan coba lagi nanti.');
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    });
+</script>
+@endpush

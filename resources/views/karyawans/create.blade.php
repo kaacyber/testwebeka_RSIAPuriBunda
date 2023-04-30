@@ -29,7 +29,7 @@
                               </div> --}}
                               <div class="form-group">
                                 <label for="unit_id">Unit</label>
-                                <select class="form-control" id="unit_id" name="unit_id">
+                                <select class="form-control select2" id="unit_id" name="unit_id">
                                   <option value="">Pilih Unit</option>
                                   @foreach($units as $unit)
                                   <option value="{{ $unit->id }}">{{ $unit->name_unit }}</option>
@@ -39,7 +39,7 @@
                               </div>
                               <div class="form-group">
                                   <label for="jabatan_id">Jabatan 1</label>
-                                  <select name="jabatan_id[]" id="jabatan_id" class="form-control" style="width: 100%;">
+                                  <select name="jabatan_id[]" id="jabatan_id" class="form-control select2" style="width: 100%;">
                                     <option value="">Pilih Jabatan 1</option>
                                       @foreach($jabatans as $jabatan)
                                           <option value="{{ $jabatan->id }}">{{ $jabatan->name_jabatan }}</option>
@@ -48,7 +48,7 @@
                               </div>
                               <div class="form-group">
                                 <label for="jabatann_id">Jabatan 2</label>
-                                <select name="jabatann_id[]" id="jabatann_id" class="form-control" style="width: 100%;">
+                                <select name="jabatann_id[]" id="jabatann_id" class="form-control select2" style="width: 100%;">
                                     <option value="">Pilih Jabatan 2</option>
                                     @foreach($jabatans as $jabatan)
                                         <option value="{{ $jabatan->id }}">{{ $jabatan->name_jabatan }}</option>

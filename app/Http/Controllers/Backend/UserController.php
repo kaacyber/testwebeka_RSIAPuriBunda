@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Backend;
 
+use Yajra\DataTables\Facades\DataTables;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UserStoreRequest;
 use App\Http\Requests\UserUpdateRequest;
@@ -18,11 +19,29 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
-        $users = User::all();
-        if ($request->has('search')) {
-            $users = User::where('username', 'like', "%{$request->search}%")->orWhere('email', 'like', "%{$request->search}%")->get();
+        if ($request->ajax()) {
+            $users = User::query();
+            if ($request->has('search')) {
+                $search = $request->search['value'];
+                $users->where(function ($query) use ($search) {
+                    $query->where('username', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                });
+            }
+
+            return DataTables::of($users)
+                ->addColumn('aksi', function ($row) {
+                    $btn = '<a href="' . route("karyawans.edit", $row->id) . '" class="btn btn-sm btn-primary mr-2">Edit</a>';
+                    $btn .= '<form action="' . route("karyawans.destroy", $row->id) . '" method="POST" class="d-inline">';
+                    $btn .= csrf_field();
+                    $btn .= method_field('DELETE');
+                    $btn .= '<button type="submit" class="btn btn-sm btn-danger" onclick="return confirm(\'Are you sure?\')">Delete</button></form>';
+                    return $btn;
+                })
+                ->rawColumns(['aksi'])
+                ->make(true);
         }
-        return view('users.index', compact('users'));
+        return view('users.index');
     }
 
     /**

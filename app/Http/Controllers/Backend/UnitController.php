@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Backend;
 
+use Yajra\DataTables\Facades\DataTables;
 use App\Http\Controllers\Controller;
 use App\Models\Unit;
 use Illuminate\Http\Request;
@@ -10,11 +11,29 @@ class UnitController extends Controller
 {
     public function index(Request $request)
     {
-        $units = Unit::all();
-        if ($request->has('search')) {
-            $units = Unit::where('name_unit', 'like', "%{$request->search}%")->get();
+        if ($request->ajax()) {
+            $units = Unit::query();
+            if ($request->has('search')) {
+                $search = $request->search['value'];
+                $units->where(function ($query) use ($search) {
+                    $query->where('name_unit', 'like', "%{$search}%")
+                        ->orWhere('name_unit', 'like', "%{$search}%");
+                });
+            }
+
+            return DataTables::of($units)
+                ->addColumn('aksi', function ($row) {
+                    $btn = '<a href="' . route("units.edit", $row->id) . '" class="btn btn-sm btn-primary mr-2">Edit</a>';
+                    $btn .= '<form action="' . route("units.destroy", $row->id) . '" method="POST" class="d-inline">';
+                    $btn .= csrf_field();
+                    $btn .= method_field('DELETE');
+                    $btn .= '<button type="submit" class="btn btn-sm btn-danger" onclick="return confirm(\'Are you sure?\')">Delete</button></form>';
+                    return $btn;
+                })
+                ->rawColumns(['aksi'])
+                ->make(true);
         }
-        return view('units.index', compact('units'));
+        return view('units.index');
     }
 
     public function create()

@@ -30,3 +30,5 @@ Route::resource('units', UnitController::class);
 Route::resource('jabatans', JabatanController::class);
 Route::resource('karyawans', KaryawanController::class);
 Route::post('users/{user}/change-password', [ChangePasswordController::class, 'change_password'])->name('users.change.password');
+Route::get('/karyawans/{id}/edit', [KaryawanController::class, 'edit'])->name('karyawans.edit');
+Route::delete('/karyawans/{id}', [KaryawanController::class, 'destroy'])->name('karyawans.destroy');

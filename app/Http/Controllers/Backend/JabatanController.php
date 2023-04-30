@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Backend;
 
+use Yajra\DataTables\Facades\DataTables;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\JabatanStoreRequest;
 use App\Http\Requests\JabatanUpdateRequest;
@@ -12,11 +13,29 @@ class JabatanController extends Controller
 {
     public function index(Request $request)
     {
-        $jabatans = Jabatan::all();
-        if ($request->has('search')) {
-            $jabatans = Jabatan::where('name_jabatan', 'like', "%{$request->search}%")->get();
+        if ($request->ajax()) {
+            $jabatans = Jabatan::query();
+            if ($request->has('search')) {
+                $search = $request->search['value'];
+                $jabatans->where(function ($query) use ($search) {
+                    $query->where('name_jabatan', 'like', "%{$search}%")
+                        ->orWhere('name_jabatan', 'like', "%{$search}%");
+                });
+            }
+
+            return DataTables::of($jabatans)
+                ->addColumn('aksi', function ($row) {
+                    $btn = '<a href="' . route("jabatans.edit", $row->id) . '" class="btn btn-sm btn-primary mr-2">Edit</a>';
+                    $btn .= '<form action="' . route("jabatans.destroy", $row->id) . '" method="POST" class="d-inline">';
+                    $btn .= csrf_field();
+                    $btn .= method_field('DELETE');
+                    $btn .= '<button type="submit" class="btn btn-sm btn-danger" onclick="return confirm(\'Are you sure?\')">Delete</button></form>';
+                    return $btn;
+                })
+                ->rawColumns(['aksi'])
+                ->make(true);
         }
-        return view('jabatans.index', compact('jabatans'));
+        return view('jabatans.index');
     }
 
     public function create()
